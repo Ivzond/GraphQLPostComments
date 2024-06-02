@@ -1,0 +1,66 @@
+type Post {
+    id: ID!
+    title: String!
+    content: String!
+    author: User!
+    comments: [Comment!]!
+    commentsEnabled: Boolean!
+    createdAt: String!
+}
+
+type Comment {
+    id: ID!
+    content: String!
+    author: User!
+    post: Post!
+    parent: Comment
+    children: [Comment]!
+    createdAt: String!
+}
+
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    posts: [Post]!
+    comments: [Comment]!
+}
+
+# Запросы
+type Query {
+    posts: [Post]!
+    post(id: ID!): Post
+    comments(postId: ID!, page: Int, limit: Int): CommentPage
+}
+
+# Ответ для пагинации комментариев
+type CommentPage {
+    comments: [Comment]!
+    pageInfo: PageInfo!
+}
+
+type PageInfo {
+    currentPage: Int!
+    totalPages: Int!
+    totalComments: Int!
+}
+
+# Мутации
+type Mutation {
+    createPost(title: String!, content: String!, authorId: ID!): Post
+    updatePost(id: ID!, title: String, content: String, commentsEnabled: Boolean): Post
+    deletePost(id: ID!): Boolean
+    createComment(postId: ID!, content: String!, authorId: ID!, parentId: ID!): Comment
+    deleteComment(id: ID!): Boolean
+}
+
+# Подписки
+type Subscription {
+    commentAdded(postId: ID!): Comment
+}
+
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+}
