@@ -28,6 +28,16 @@ func (r *mutationResolver) CreatePost(ctx context.Context, title string, content
 	return r.Store.CreatePost(post)
 }
 
+// Posts is the resolver for the posts field.
+func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
+	return r.Store.GetPosts()
+}
+
+// Post is the resolver for the post field.
+func (r *queryResolver) Post(ctx context.Context, id string) (*model.Post, error) {
+	return r.Store.GetPostByID(id)
+}
+
 // UpdatePost is the resolver for the updatePost field.
 func (r *mutationResolver) UpdatePost(ctx context.Context, id string, title *string, content *string, commentsEnabled *bool) (*model.Post, error) {
 	post, err := r.Store.GetPostByID(id)
@@ -94,25 +104,6 @@ func (r *mutationResolver) CreateComment(ctx context.Context, postID string, con
 	return createdComment, nil
 }
 
-// DeleteComment is the resolver for the deleteComment field.
-func (r *mutationResolver) DeleteComment(ctx context.Context, id string) (*bool, error) {
-	deleted, err := r.Store.DeleteComment(id)
-	if err != nil {
-		return nil, err
-	}
-	return &deleted, nil
-}
-
-// Posts is the resolver for the posts field.
-func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
-	return r.Store.GetPosts()
-}
-
-// Post is the resolver for the post field.
-func (r *queryResolver) Post(ctx context.Context, id string) (*model.Post, error) {
-	return r.Store.GetPostByID(id)
-}
-
 // Comments is the resolver for the comments field.
 func (r *queryResolver) Comments(ctx context.Context, postID string, page *int, limit *int) (*model.CommentPage, error) {
 	p := 1
@@ -124,6 +115,15 @@ func (r *queryResolver) Comments(ctx context.Context, postID string, page *int, 
 		l = *limit
 	}
 	return r.Store.GetComments(postID, p, l)
+}
+
+// DeleteComment is the resolver for the deleteComment field.
+func (r *mutationResolver) DeleteComment(ctx context.Context, id string) (*bool, error) {
+	deleted, err := r.Store.DeleteComment(id)
+	if err != nil {
+		return nil, err
+	}
+	return &deleted, nil
 }
 
 // CommentAdded is the resolver for the commentAdded field.
