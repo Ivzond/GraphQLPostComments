@@ -1,0 +1,2 @@
+storage_type: "memory"
+postgres_database_url: "postgres://postgres:12345678@postgres:5432/post_comments?sslmode=disable"
