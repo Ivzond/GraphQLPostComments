@@ -85,6 +85,20 @@ func (s *Storage) DeletePost(id string) (bool, error) {
 	return true, nil
 }
 
+func (s *Storage) GetCommentByID(id string) (*model.Comment, error) {
+	comment := &model.Comment{}
+	err := s.db.QueryRow("SELECT id, content, author, post, created_at FROM comments WHERE id = $1", id).
+		Scan(&comment.ID, &comment.Content, &comment.Author.ID, comment.Post.ID, &comment.CreatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("comment not found")
+		}
+		return nil, err
+	}
+
+	return comment, nil
+}
+
 func (s *Storage) GetComments(postID string, page int, limit int) (*model.CommentPage, error) {
 	var totalComments int
 	err := s.db.QueryRow("SELECT COUNT(*) FROM comments WHERE post_id = $1", postID).Scan(&totalComments)

@@ -9,7 +9,7 @@ import (
 )
 
 type Storage struct {
-	posts        map[string]*model.Post
+	Posts        map[string]*model.Post
 	comments     map[string]*model.Comment
 	postMutex    sync.RWMutex
 	commentMutex sync.RWMutex
@@ -17,7 +17,7 @@ type Storage struct {
 
 func NewStorage() *Storage {
 	return &Storage{
-		posts:    make(map[string]*model.Post),
+		Posts:    make(map[string]*model.Post),
 		comments: make(map[string]*model.Comment),
 	}
 }
@@ -26,8 +26,8 @@ func (s *Storage) GetPosts() ([]*model.Post, error) {
 	s.postMutex.RLock()
 	defer s.postMutex.RUnlock()
 
-	posts := make([]*model.Post, 0, len(s.posts))
-	for _, post := range s.posts {
+	posts := make([]*model.Post, 0, len(s.Posts))
+	for _, post := range s.Posts {
 		posts = append(posts, post)
 	}
 	return posts, nil
@@ -37,7 +37,7 @@ func (s *Storage) GetPostByID(id string) (*model.Post, error) {
 	s.postMutex.RLock()
 	defer s.postMutex.RUnlock()
 
-	post, ok := s.posts[id]
+	post, ok := s.Posts[id]
 	if !ok {
 		return nil, errors.New("post not found")
 	}
@@ -51,7 +51,7 @@ func (s *Storage) CreatePost(post *model.Post) (*model.Post, error) {
 	s.postMutex.Lock()
 	defer s.postMutex.Unlock()
 
-	s.posts[post.ID] = post
+	s.Posts[post.ID] = post
 	return post, nil
 }
 
@@ -59,12 +59,12 @@ func (s *Storage) UpdatePost(updatedPost *model.Post) (*model.Post, error) {
 	s.postMutex.Lock()
 	defer s.postMutex.Unlock()
 
-	_, ok := s.posts[updatedPost.ID]
+	_, ok := s.Posts[updatedPost.ID]
 	if !ok {
 		return nil, errors.New("post not found")
 	}
 
-	s.posts[updatedPost.ID] = updatedPost
+	s.Posts[updatedPost.ID] = updatedPost
 	return updatedPost, nil
 }
 
@@ -72,12 +72,22 @@ func (s *Storage) DeletePost(id string) (bool, error) {
 	s.postMutex.Lock()
 	defer s.postMutex.Unlock()
 
-	_, ok := s.posts[id]
+	_, ok := s.Posts[id]
 	if !ok {
 		return false, errors.New("post not found")
 	}
-	delete(s.posts, id)
+	delete(s.Posts, id)
 	return true, nil
+}
+
+func (s *Storage) GetCommentByID(id string) (*model.Comment, error) {
+	s.commentMutex.RLock()
+	defer s.commentMutex.RUnlock()
+	comment, ok := s.comments[id]
+	if !ok {
+		return nil, errors.New("comment not found")
+	}
+	return comment, nil
 }
 
 func (s *Storage) GetComments(postID string, page int, limit int) (*model.CommentPage, error) {
