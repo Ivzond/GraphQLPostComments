@@ -149,18 +149,23 @@ func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID string) 
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	// Проверка, существует ли уже карта подписчиков для данного поста. Если нет, то создаем её.
 	if _, ok := r.observers[postID]; !ok {
 		r.observers[postID] = map[string]chan *model.Comment{}
 	}
 
+	// Создание уникального идентификатора подписки и канала для событий.
 	id := uuid.New().String()
 	events := make(chan *model.Comment)
 	r.observers[postID][id] = events
 
+	// Запуск горутины, которая удаляет подписку, когда контекст закрывается.
 	go func() {
 		<-ctx.Done()
 		r.mu.Lock()
+		// Удаление подписки
 		delete(r.observers[postID], id)
+		// Если у поста больше нет подписчиков, удаляем таблицу подписчиков для поста
 		if len(r.observers[postID]) == 0 {
 			delete(r.observers, postID)
 		}
